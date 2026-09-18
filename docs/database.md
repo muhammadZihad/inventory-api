@@ -185,6 +185,29 @@ submitted by a client; the rest are written by the order workflow.
 Indexes: **`unique(user_id, key)`** (the arbiter of concurrent duplicates), `index(expires_at)`
 (used by the prune query), FK index, audit indexes.
 
+#### `product_sales_metrics`
+
+Materialised sales aggregates, one row per product. Deriving these on the fly meant grouping every
+`order_items` row and joining the result to the whole catalog on each request, which no index can
+help with — see [Performance](performance.md).
+
+| Column | Type | Notes |
+| --- | --- | --- |
+| `product_id` | char(26) | PK, FK → `products.id`, cascade delete |
+| `units_sold` | unsignedBigInteger | total quantity ordered, default 0 |
+| `orders_count` | unsignedBigInteger | distinct orders containing the product, default 0 |
+| `gross_sales` | decimal(14,2) | summed line totals, default 0 |
+| `sales_rank` | unsignedInteger null | dense rank by `gross_sales`; null when unsold |
+| audit | | `actionAt()` |
+
+Indexes: one per sortable metric — `index(units_sold)`, `index(orders_count)`,
+`index(gross_sales)`, `index(sales_rank)`.
+
+Totals are updated synchronously when an order is created; the rank is recomputed by a queued job,
+so it can trail the totals briefly. Every product is guaranteed a row by a model `created` event,
+which is what allows catalog reads to use an inner join. `php artisan metrics:rebuild` recomputes
+the table from `order_items` after any bulk insert that bypasses Eloquent.
+
 #### Framework tables
 
 `users` (ULID `id`, `name`, unique `email`, `email_verified_at`, `password`, `is_admin` boolean

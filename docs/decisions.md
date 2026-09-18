@@ -16,3 +16,37 @@
 ---
 
 [← Back to the README](../README.md)
+
+## Actions and services instead of repositories
+
+`~/.claude/CLAUDE.md` prescribes a Service/Repository pattern with `app/Repositories/`
+(interface plus Eloquent implementation). This project deliberately departs from that: data access
+goes through Eloquent directly from single-purpose Actions and Services.
+
+**Why.** A repository wrapping Eloquent mostly re-exposes the query builder through a narrower
+interface, and the swappability it promises is rarely exercised — Eloquent models are already the
+persistence abstraction. What the rule is really protecting against is business logic leaking into
+controllers, and that is addressed here by Actions (`CreateOrderAction`), Services
+(`InventoryLedger`, `SalesMetricsService`) and query objects (`ProductListQuery`), which keep
+controllers to validate-delegate-respond.
+
+**Where abstraction does earn its place**, it is applied: `App\Contracts\StockLedger`,
+`SalesMetrics` and `OrderReports` are interfaces bound to their implementations in
+`AppServiceProvider`, so the order workflow depends on the stock ledger's behaviour rather than on
+one particular implementation of it.
+
+**Trade-off.** Swapping the persistence layer wholesale would touch more code than it would with
+repositories. That is judged an acceptable cost for an application whose storage is MySQL by design
+and whose concurrency guarantees depend on database row locking.
+
+## Catalog writes are administrator-only
+
+Reads are open to any authenticated client, but creating or editing products and categories, and
+adjusting stock, require `users.is_admin`.
+
+Registration is public, so without this any self-registered account could rewrite prices, delete
+products or invent inventory. Customer creation and updates stay open because placing an order
+requires a customer record; deletion is restricted because it cascades to that customer's orders.
+
+This replaces an earlier decision to treat catalog data as shared and unguarded, which an automated
+security review correctly flagged and a live probe confirmed was exploitable.

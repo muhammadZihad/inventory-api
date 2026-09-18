@@ -23,8 +23,22 @@ return $user->is_admin || $order->created_by === $user->id;
 
 Orders are owned by the API client that created them; admins (`users.is_admin`) reach every order.
 The same rule is enforced at the query level by `Order::scopeVisibleTo()` on `GET /orders`, so a
-list can never leak another client's orders even if a policy check were missed. Catalog data
-(products, categories, customers) is deliberately shared business data and has no ownership policy.
+list can never leak another client's orders even if a policy check were missed.
+
+Catalog and stock are back-office data, not owned data, so they use a role check rather than
+ownership. Registration is public, so without this any self-registered account could rewrite prices
+or empty the catalog.
+
+| Resource | Read | Create / update | Delete |
+| --- | --- | --- | --- |
+| Products, categories | any authenticated client | administrator | administrator |
+| Inventory adjustments | any authenticated client | administrator | — |
+| Customers | any authenticated client | any authenticated client | administrator |
+| Orders | owner or admin | owner or admin | — (cancel, owner or admin) |
+
+Enforced by `ProductPolicy`, `CategoryPolicy`, `CustomerPolicy` and `OrderPolicy`, invoked with
+`$this->authorize(...)` in the controllers. Customer creation stays open because placing an order
+requires a customer record; deletion is restricted because it cascades to that customer's orders.
 
 ### Rate limiting
 
