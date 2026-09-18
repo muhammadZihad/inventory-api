@@ -105,6 +105,8 @@ class InventoryController extends Controller
      */
     public function adjust(AdjustInventoryRequest $request, Product $product, AdjustInventoryAction $action): JsonResponse
     {
+        $this->authorize('adjustInventory', $product);
+
         $inventory = $action->execute($product, InventoryAdjustmentData::fromArray($request->validated()));
 
         return ApiResponse::success(InventoryItemResource::make($inventory)->resolve(), 'Inventory adjusted successfully.');

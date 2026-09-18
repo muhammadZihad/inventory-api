@@ -89,6 +89,8 @@ class CategoryController extends Controller
      */
     public function store(StoreCategoryRequest $request): JsonResponse
     {
+        $this->authorize('create', Category::class);
+
         $category = Category::query()->create(
             CategoryData::fromArray($request->validated())->toCreateAttributes(),
         );
@@ -146,6 +148,8 @@ class CategoryController extends Controller
      */
     public function update(UpdateCategoryRequest $request, Category $category): JsonResponse
     {
+        $this->authorize('update', $category);
+
         $category->update(
             CategoryData::fromArray($request->validated())->toUpdateAttributes($category),
         );
@@ -170,6 +174,8 @@ class CategoryController extends Controller
      */
     public function destroy(Category $category): JsonResponse
     {
+        $this->authorize('delete', $category);
+
         $category->delete();
 
         CatalogChanged::dispatch('category', $category->id);

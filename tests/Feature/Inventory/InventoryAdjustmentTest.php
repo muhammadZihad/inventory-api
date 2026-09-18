@@ -23,7 +23,8 @@ class InventoryAdjustmentTest extends TestCase
     {
         parent::setUp();
 
-        Passport::actingAs(User::factory()->create());
+        // Catalog and stock writes are administrator operations.
+        Passport::actingAs(User::factory()->create(['is_admin' => true]));
     }
 
     public function test_a_positive_restock_increases_on_hand_and_writes_a_restock_movement(): void

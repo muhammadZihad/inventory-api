@@ -27,6 +27,19 @@ class User extends Authenticatable implements OAuthenticatable
     use HasApiTokens, HasFactory, HasUlids, Notifiable;
 
     /**
+     * Mirror the column default so a newly created model never reports null.
+     *
+     * Without this, `is_admin` is absent from a model that was just created
+     * (the default is applied by the database, not by Eloquent) and every
+     * authorization check has to guard against null.
+     *
+     * @var array<string, mixed>
+     */
+    protected $attributes = [
+        'is_admin' => false,
+    ];
+
+    /**
      * Get the orders this user created.
      */
     public function orders(): HasMany

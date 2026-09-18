@@ -12,10 +12,10 @@ use App\Http\Requests\Customers\StoreCustomerRequest;
 use App\Http\Requests\Customers\UpdateCustomerRequest;
 use App\Http\Resources\CustomerResource;
 use App\Models\Customer;
+use App\Queries\CustomerListQuery;
 use App\Support\ApiResponse;
 use App\Support\CacheNamespace;
 use App\Support\CacheRepository;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\JsonResponse;
 
 /**
@@ -28,47 +28,10 @@ class CustomerController extends Controller
     /**
      * Bind the read-through cache.
      */
-    public function __construct(private readonly CacheRepository $cache) {}
-
-    /**
-     * Page customers, attaching order metrics in the cheapest way available.
-     *
-     * Sorting by a metric column has to happen before pagination and therefore
-     * joins the global aggregate; anything else pages on an indexed column and
-     * then fetches metrics for just that page.
-     *
-     * @param  array<string, mixed>  $filters
-     * @return LengthAwarePaginator<Customer>
-     */
-    private function paginateWithMetrics(array $filters, int $perPage): LengthAwarePaginator
-    {
-        $sortColumn = ltrim((string) ($filters['sort'] ?? ''), '-');
-
-        if (in_array($sortColumn, Customer::ORDER_METRIC_COLUMNS, true)) {
-            // As with products, the aggregate join cannot change the row count,
-            // so the count query is computed without it.
-            $total = Customer::query()->filter($filters)->toBase()->getCountForPagination();
-
-            return Customer::query()
-                ->withOrderMetrics()
-                ->filter($filters)
-                ->paginate($perPage, ['*'], 'page', null, $total);
-        }
-
-        $paginator = Customer::query()->filter($filters)->paginate($perPage);
-        $metrics = Customer::orderMetricsFor($paginator->getCollection()->pluck('id')->all());
-
-        $paginator->getCollection()->each(function (Customer $customer) use ($metrics): void {
-            $customer->forceFill($metrics[$customer->id] ?? [
-                'orders_count' => 0,
-                'completed_orders_count' => 0,
-                'total_order_amount' => 0,
-                'customer_value_rank' => null,
-            ])->syncOriginal();
-        });
-
-        return $paginator;
-    }
+    public function __construct(
+        private readonly CacheRepository $cache,
+        private readonly CustomerListQuery $customers,
+    ) {}
 
     /**
      * List customers
@@ -103,7 +66,7 @@ class CustomerController extends Controller
             CacheNamespace::Customers,
             ['view' => 'customers.index', 'page' => $request->integer('page', 1), 'per_page' => $request->perPage(), ...$filters],
             fn (): array => ApiResponse::paginatedPayload(
-                $this->paginateWithMetrics($filters, $request->perPage()),
+                $this->customers->paginate($filters, $request->perPage()),
                 CustomerResource::class,
             ),
         );
@@ -131,6 +94,8 @@ class CustomerController extends Controller
      */
     public function store(StoreCustomerRequest $request): JsonResponse
     {
+        $this->authorize('create', Customer::class);
+
         $customer = Customer::query()->create(
             CustomerData::fromArray($request->validated())->toCreateAttributes()
         );
@@ -189,6 +154,8 @@ class CustomerController extends Controller
      */
     public function update(UpdateCustomerRequest $request, Customer $customer): JsonResponse
     {
+        $this->authorize('update', $customer);
+
         $customer->update(
             CustomerData::fromArray($request->validated())->toUpdateAttributes($customer)
         );
@@ -212,6 +179,8 @@ class CustomerController extends Controller
      */
     public function destroy(Customer $customer): JsonResponse
     {
+        $this->authorize('delete', $customer);
+
         $customer->delete();
 
         CustomerChanged::dispatch($customer->id);

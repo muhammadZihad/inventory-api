@@ -46,6 +46,6 @@ class OrderPolicy
      */
     private function owns(User $user, Order $order): bool
     {
-        return $user->is_admin || $order->created_by === $user->id;
+        return (bool) $user->is_admin || $order->created_by === $user->id;
     }
 }

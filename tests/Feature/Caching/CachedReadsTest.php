@@ -36,7 +36,8 @@ class CachedReadsTest extends TestCase
         // array driver the test config happens to use.
         Cache::flush();
 
-        Passport::actingAs(User::factory()->create());
+        // Catalog and stock writes are administrator operations.
+        Passport::actingAs(User::factory()->create(['is_admin' => true]));
     }
 
     public function test_product_index_is_served_from_cache_on_a_repeat_request(): void

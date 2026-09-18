@@ -13,12 +13,11 @@ use App\Http\Requests\Catalog\StoreProductRequest;
 use App\Http\Requests\Catalog\UpdateProductRequest;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
+use App\Queries\ProductListQuery;
 use App\Support\ApiResponse;
 use App\Support\CacheNamespace;
 use App\Support\CacheRepository;
 use App\Support\Money;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 
 /**
@@ -31,7 +30,10 @@ class ProductController extends Controller
     /**
      * Bind the read-through cache.
      */
-    public function __construct(private readonly CacheRepository $cache) {}
+    public function __construct(
+        private readonly CacheRepository $cache,
+        private readonly ProductListQuery $products,
+    ) {}
 
     /**
      * List products
@@ -78,7 +80,7 @@ class ProductController extends Controller
             CacheNamespace::Products,
             ['view' => 'products.index', 'page' => $request->integer('page', 1), 'per_page' => $request->perPage(), ...$filters],
             fn (): array => ApiResponse::paginatedPayload(
-                $this->paginateWithMetrics($filters, $request->perPage()),
+                $this->products->paginate($filters, $request->perPage()),
                 ProductResource::class,
             ),
         );
@@ -114,6 +116,8 @@ class ProductController extends Controller
      */
     public function store(StoreProductRequest $request, CreateProductAction $action): JsonResponse
     {
+        $this->authorize('create', Product::class);
+
         $product = $action->execute(ProductData::fromArray($request->validated()));
 
         return ApiResponse::created($this->present($product->id), 'Product created successfully.');
@@ -173,6 +177,8 @@ class ProductController extends Controller
      */
     public function update(UpdateProductRequest $request, Product $product): JsonResponse
     {
+        $this->authorize('update', $product);
+
         $attributes = collect($request->validated())
             ->when(
                 $request->has('price'),
@@ -199,66 +205,13 @@ class ProductController extends Controller
      */
     public function destroy(Product $product): JsonResponse
     {
+        $this->authorize('delete', $product);
+
         $product->delete();
 
         CatalogChanged::dispatch('product', $product->id);
 
         return ApiResponse::success(null, 'Product deleted successfully.');
-    }
-
-    /**
-     * Page the catalog, attaching sales metrics in the cheapest way available.
-     *
-     * Sorting by a metric column has to happen before pagination, so that case
-     * still joins the global aggregate. Every other request — the common one —
-     * pages on an indexed column first and then fetches metrics for just that
-     * page, which keeps the aggregate off the paginator's count query and off
-     * the other 100k+ products.
-     *
-     * @param  array<string, mixed>  $filters
-     * @return LengthAwarePaginator<Product>
-     */
-    private function paginateWithMetrics(array $filters, int $perPage): LengthAwarePaginator
-    {
-        $sortColumn = ltrim((string) ($filters['sort'] ?? ''), '-');
-
-        if (in_array($sortColumn, Product::SALES_METRIC_COLUMNS, true)) {
-            // No filter touches a metric column, so the row count can be taken
-            // from the unjoined query. Passing it to paginate() suppresses the
-            // count query, which would otherwise repeat the join just to
-            // produce a number the join cannot change.
-            $total = $this->baseQuery()->filter($filters)->toBase()->getCountForPagination();
-
-            return $this->baseQuery()
-                ->withSalesMetrics()
-                ->filter($filters)
-                ->paginate($perPage, ['*'], 'page', null, $total);
-        }
-
-        $paginator = $this->baseQuery()->filter($filters)->paginate($perPage);
-        $metrics = Product::salesMetricsFor($paginator->getCollection()->pluck('id')->all());
-
-        $paginator->getCollection()->each(function (Product $product) use ($metrics): void {
-            $product->forceFill($metrics[$product->id] ?? [
-                'units_sold' => 0,
-                'orders_count' => 0,
-                'gross_sales' => 0,
-                'sales_rank' => null,
-            ])->syncOriginal();
-        });
-
-        return $paginator;
-    }
-
-    /**
-     * Build the product query shared by every read, with relations eager-loaded.
-     *
-     * @return Builder<Product>
-     */
-    private function baseQuery(): Builder
-    {
-        return Product::query()
-            ->with(['category' => fn ($query) => $query->withCount('products'), 'inventory']);
     }
 
     /**
@@ -269,7 +222,7 @@ class ProductController extends Controller
     private function present(string $productId): array
     {
         return ProductResource::make(
-            $this->baseQuery()->withSalesMetrics()->findOrFail($productId),
+            $this->products->baseQuery()->withSalesMetrics()->findOrFail($productId),
         )->resolve();
     }
 }

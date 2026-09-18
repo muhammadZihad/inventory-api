@@ -17,7 +17,8 @@ class ProductApiTest extends TestCase
 
     public function test_authenticated_user_can_create_product_and_receive_single_object_response(): void
     {
-        Passport::actingAs(User::factory()->create());
+        // Catalog and stock writes are administrator operations.
+        Passport::actingAs(User::factory()->create(['is_admin' => true]));
 
         $category = Category::factory()->create(['name' => 'Electronics']);
 
@@ -49,7 +50,8 @@ class ProductApiTest extends TestCase
 
     public function test_product_index_supports_reusable_filter_scope_and_paginated_response(): void
     {
-        Passport::actingAs(User::factory()->create());
+        // Catalog and stock writes are administrator operations.
+        Passport::actingAs(User::factory()->create(['is_admin' => true]));
 
         $electronics = Category::factory()->create(['name' => 'Electronics']);
         $books = Category::factory()->create(['name' => 'Books']);
