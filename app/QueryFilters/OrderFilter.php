@@ -30,17 +30,8 @@ class OrderFilter extends QueryFilter
     /**
      * Apply order sorting, including readable customer name and item count columns.
      */
-    protected function applySort(Builder $query): void
+    protected function applySortColumn(Builder $query, string $column, string $direction): void
     {
-        $sort = $this->filters['sort'] ?? '-created_at';
-        $direction = str_starts_with($sort, '-') ? 'desc' : 'asc';
-        $column = ltrim($sort, '-');
-
-        if (! in_array($column, $this->sortableColumns, true)) {
-            $column = 'created_at';
-            $direction = 'desc';
-        }
-
         if ($column === 'customer_name') {
             $query->orderBy(
                 Customer::query()
@@ -53,6 +44,6 @@ class OrderFilter extends QueryFilter
             return;
         }
 
-        $query->orderBy($column, $direction);
+        parent::applySortColumn($query, $column, $direction);
     }
 }

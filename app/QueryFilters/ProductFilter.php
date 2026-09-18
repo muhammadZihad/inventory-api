@@ -60,53 +60,30 @@ class ProductFilter extends QueryFilter
     /**
      * Apply product sorting, including category name and stock relation columns.
      */
-    protected function applySort(Builder $query): void
+    protected function applySortColumn(Builder $query, string $column, string $direction): void
     {
-        $sort = $this->filters['sort'] ?? '-created_at';
-        $direction = str_starts_with($sort, '-') ? 'desc' : 'asc';
-        $column = ltrim($sort, '-');
+        $relationSort = match ($column) {
+            'category_name' => Category::query()
+                ->select('name')
+                ->whereColumn('categories.id', 'products.category_id')
+                ->limit(1),
+            'stock' => InventoryItem::query()
+                ->select('quantity_on_hand')
+                ->whereColumn('inventory_items.product_id', 'products.id')
+                ->limit(1),
+            'available_stock' => InventoryItem::query()
+                ->selectRaw(InventoryItem::AVAILABLE_EXPRESSION)
+                ->whereColumn('inventory_items.product_id', 'products.id')
+                ->limit(1),
+            default => null,
+        };
 
-        if (! in_array($column, $this->sortableColumns, true)) {
-            $column = 'created_at';
-            $direction = 'desc';
-        }
-
-        if ($column === 'category_name') {
-            $query->orderBy(
-                Category::query()
-                    ->select('name')
-                    ->whereColumn('categories.id', 'products.category_id')
-                    ->limit(1),
-                $direction
-            );
-
-            return;
-        }
-
-        if ($column === 'stock') {
-            $query->orderBy(
-                InventoryItem::query()
-                    ->select('quantity_on_hand')
-                    ->whereColumn('inventory_items.product_id', 'products.id')
-                    ->limit(1),
-                $direction
-            );
+        if ($relationSort === null) {
+            parent::applySortColumn($query, $column, $direction);
 
             return;
         }
 
-        if ($column === 'available_stock') {
-            $query->orderBy(
-                InventoryItem::query()
-                    ->selectRaw(InventoryItem::AVAILABLE_EXPRESSION)
-                    ->whereColumn('inventory_items.product_id', 'products.id')
-                    ->limit(1),
-                $direction
-            );
-
-            return;
-        }
-
-        $query->orderBy($column, $direction);
+        $query->orderBy($relationSort, $direction);
     }
 }

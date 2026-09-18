@@ -150,6 +150,9 @@ abstract class QueryFilter
 
     /**
      * Apply safe sorting, falling back to newest records for unsupported columns.
+     *
+     * The requested sort is parsed and whitelisted here only; subclasses hook
+     * into applySortColumn() to handle their own relation or derived columns.
      */
     protected function applySort(Builder $query): void
     {
@@ -162,6 +165,14 @@ abstract class QueryFilter
             $direction = 'desc';
         }
 
+        $this->applySortColumn($query, $column, $direction);
+    }
+
+    /**
+     * Order the query by an already whitelisted column and direction.
+     */
+    protected function applySortColumn(Builder $query, string $column, string $direction): void
+    {
         $query->orderBy($this->sortAliases[$column] ?? $column, $direction);
     }
 }
