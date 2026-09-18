@@ -1,0 +1,839 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+:root {
+    color-scheme: light;
+    font-family: var(--font-sans);
+    background: #f5f7f8;
+    color: #172026;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-width: 320px;
+    background: #f5f7f8;
+}
+
+button,
+input,
+select {
+    font: inherit;
+}
+
+button {
+    border: 1px solid #172026;
+    background: #172026;
+    color: #fff;
+    border-radius: 6px;
+    min-height: 38px;
+    padding: 0 14px;
+    cursor: pointer;
+}
+
+button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+button.ghost,
+.tabs button {
+    background: #fff;
+    color: #172026;
+    border-color: #cdd7dd;
+}
+
+.shell {
+    width: min(1480px, calc(100vw - 32px));
+    margin: 0 auto;
+    padding: 24px 0 36px;
+}
+
+.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 0 20px;
+}
+
+.eyebrow {
+    margin: 0 0 4px;
+    color: #60717d;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+h1 {
+    margin: 0;
+    font-size: clamp(26px, 4vw, 42px);
+    font-weight: 760;
+}
+
+.login {
+    max-width: 420px;
+    margin: 32px 0 48px;
+    padding: 22px;
+    background: #fff;
+    border: 1px solid #e2e8ea;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgb(23 32 38 / 6%);
+}
+
+.login .tabs {
+    margin-bottom: 18px;
+}
+
+.login .tabs button {
+    flex: 1;
+}
+
+.login input,
+.filters input,
+.filters select {
+    width: 100%;
+    min-height: 38px;
+    border: 1px solid #cdd7dd;
+    border-radius: 6px;
+    background: #fff;
+    color: #172026;
+    padding: 0 10px;
+}
+
+.workspace {
+    border-top: 1px solid #dce4e8;
+}
+
+.resource-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 0;
+}
+
+.tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.tabs button.active {
+    background: #0f766e;
+    border-color: #0f766e;
+    color: #fff;
+}
+
+.filters {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(130px, 1fr));
+    gap: 10px;
+    align-items: end;
+    padding: 14px;
+    background: #e8eef1;
+    border: 1px solid #d3dee3;
+    border-radius: 8px;
+}
+
+.filters label {
+    display: grid;
+    gap: 5px;
+    color: #52646f;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.summary,
+.pager {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 0;
+    color: #52646f;
+}
+
+.pager {
+    justify-content: space-between;
+}
+
+.page-size,
+.page-actions {
+    display: flex;
+    align-items: end;
+    gap: 8px;
+}
+
+.page-size label {
+    display: grid;
+    gap: 5px;
+    color: #52646f;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.page-size select,
+.page-size input {
+    width: 104px;
+    min-height: 38px;
+    border: 1px solid #cdd7dd;
+    border-radius: 6px;
+    background: #fff;
+    color: #172026;
+    padding: 0 10px;
+}
+
+.summary strong {
+    color: #172026;
+    font-size: 18px;
+}
+
+.table-wrap {
+    overflow-x: auto;
+    border: 1px solid #d3dee3;
+    border-radius: 8px;
+    background: #fff;
+}
+
+/* The 860px floor keeps the main data grids readable while they scroll inside
+   .table-wrap; it must not apply to the compact tables inside cards. */
+.table-wrap table {
+    min-width: 860px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    border-bottom: 1px solid #e5ecef;
+    padding: 11px 12px;
+    text-align: left;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+th {
+    background: #f9fbfc;
+    color: #52646f;
+    font-size: 12px;
+    text-transform: uppercase;
+}
+
+th .sort-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font-weight: 800;
+    text-align: left;
+}
+
+.sort-mark {
+    min-width: 26px;
+    color: #0f766e;
+    font-size: 10px;
+    text-transform: uppercase;
+}
+
+tbody tr:hover {
+    background: #f5faf9;
+}
+
+.notice {
+    margin: 10px 0;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.notice.error {
+    background: #fff1f2;
+    color: #9f1239;
+    border: 1px solid #fecdd3;
+}
+
+@media (max-width: 980px) {
+    .topbar,
+    .login {
+        grid-template-columns: 1fr;
+        align-items: stretch;
+    }
+
+    .topbar,
+    .resource-toolbar {
+        display: grid;
+    }
+
+    .filters {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 620px) {
+    .shell {
+        width: min(100vw - 20px, 1480px);
+        padding-top: 14px;
+    }
+
+    .filters {
+        grid-template-columns: 1fr;
+    }
+
+    .filter-actions,
+    .pager,
+    .page-size,
+    .page-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .page-size {
+        grid-column: 1 / -1;
+    }
+
+    .page-size select,
+    .page-size input {
+        width: 100%;
+    }
+}
+
+.clickable-row {
+    cursor: pointer;
+}
+
+.link-button {
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #0f766e;
+    font-weight: 700;
+    text-align: left;
+}
+
+.drawer-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    justify-content: flex-end;
+    background: rgb(15 23 42 / 0.32);
+}
+
+.drawer {
+    width: min(520px, 100vw);
+    height: 100vh;
+    overflow-y: auto;
+    background: #fff;
+    border-left: 1px solid #d3dee3;
+    padding: 20px;
+    box-shadow: -18px 0 40px rgb(15 23 42 / 0.18);
+}
+
+.drawer-header,
+.drawer-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.drawer-header {
+    padding-bottom: 18px;
+    border-bottom: 1px solid #e5ecef;
+}
+
+.drawer-header h2 {
+    margin: 0;
+    font-size: 24px;
+}
+
+.detail-list {
+    display: grid;
+    grid-template-columns: 150px minmax(0, 1fr);
+    gap: 1px;
+    margin: 18px 0;
+    overflow: hidden;
+    border: 1px solid #e5ecef;
+    border-radius: 8px;
+    background: #e5ecef;
+}
+
+.detail-list dt,
+.detail-list dd {
+    margin: 0;
+    padding: 10px 12px;
+    background: #fff;
+    overflow-wrap: anywhere;
+    font-size: 13px;
+}
+
+.detail-list dt {
+    color: #52646f;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.drawer-form {
+    display: grid;
+    gap: 12px;
+    padding: 18px 0;
+}
+
+.drawer-form label {
+    display: grid;
+    gap: 6px;
+    color: #52646f;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.drawer-form input,
+.drawer-form select,
+.drawer-form textarea {
+    width: 100%;
+    min-height: 40px;
+    border: 1px solid #cdd7dd;
+    border-radius: 6px;
+    color: #172026;
+    padding: 8px 10px;
+}
+
+.drawer-form textarea {
+    resize: vertical;
+}
+
+.nested-list {
+    display: grid;
+    gap: 8px;
+    margin: 14px 0 18px;
+}
+
+.nested-list h3 {
+    margin: 0;
+    font-size: 15px;
+}
+
+.nested-list div {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 9px 10px;
+    border: 1px solid #e5ecef;
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+@media (max-width: 620px) {
+    .drawer {
+        width: 100vw;
+    }
+
+    .detail-list {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ---------------------------------------------------------------------------
+   Console additions: badges, stat cards, ledgers, toasts and inline forms.
+   --------------------------------------------------------------------------- */
+
+.topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.ghost-link {
+    color: #172026;
+    font-size: 13px;
+    text-decoration: none;
+    border-bottom: 1px solid #c8d2d6;
+}
+
+.ghost-link:hover {
+    border-bottom-color: #172026;
+}
+
+.login-form {
+    display: grid;
+    gap: 10px;
+}
+
+.login-form label {
+    display: grid;
+    gap: 4px;
+    font-size: 13px;
+    color: #4a5a63;
+}
+
+button.danger {
+    border-color: #b3261e;
+    color: #b3261e;
+}
+
+button.danger:hover:not(:disabled) {
+    background: #fdecea;
+}
+
+th.sortable {
+    cursor: pointer;
+    user-select: none;
+}
+
+.field-error {
+    margin: -4px 0 0;
+    color: #b3261e;
+    font-size: 12px;
+}
+
+.badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: capitalize;
+    background: #e8edef;
+    color: #40515a;
+}
+
+.badge-active,
+.badge-completed {
+    background: #e2f4e8;
+    color: #1f6b3a;
+}
+
+.badge-pending {
+    background: #fdf3dc;
+    color: #8a6100;
+}
+
+.badge-confirmed {
+    background: #e3eefc;
+    color: #1d4f91;
+}
+
+.badge-cancelled,
+.badge-archived {
+    background: #fdecea;
+    color: #b3261e;
+}
+
+.badge-draft {
+    background: #eceff1;
+    color: #55636b;
+}
+
+.text-warn {
+    color: #b3261e;
+    font-weight: 600;
+}
+
+.stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.stat-card {
+    background: #fff;
+    border: 1px solid #e2e8ea;
+    border-radius: 10px;
+    padding: 14px 16px;
+}
+
+.stat-label {
+    margin: 0 0 6px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #6b7a83;
+}
+
+.stat-value {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 600;
+}
+
+.split-panels {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 16px;
+}
+
+.panel {
+    background: #fff;
+    border: 1px solid #e2e8ea;
+    border-radius: 10px;
+    padding: 16px;
+}
+
+.panel h2 {
+    margin: 0 0 4px;
+    font-size: 16px;
+}
+
+/* Tables that can outgrow their container scroll inside this wrapper instead
+   of overflowing the card or drawer that holds them. */
+.table-scroll {
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.drawer-body .mini-table {
+    min-width: 380px;
+}
+
+.mini-table {
+    width: 100%;
+    min-width: 0;
+    border-collapse: collapse;
+    margin-top: 10px;
+    font-size: 13px;
+}
+
+.mini-table th,
+.mini-table td {
+    text-align: left;
+    padding: 7px 8px;
+    border-bottom: 1px solid #eef2f3;
+}
+
+/* Card tables wrap rather than forcing their container to scroll. */
+.panel .mini-table th,
+.panel .mini-table td {
+    white-space: normal;
+}
+
+.mini-table th {
+    color: #6b7a83;
+    font-weight: 500;
+}
+
+.inner-tabs {
+    margin: 14px 0 10px;
+}
+
+.inline-field {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #4a5a63;
+}
+
+.line-item {
+    display: grid;
+    grid-template-columns: 1fr 90px auto;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.line-item .eyebrow {
+    grid-column: 1 / -1;
+    margin: 0;
+}
+
+.timeline {
+    list-style: none;
+    margin: 10px 0 0;
+    padding: 0;
+    display: grid;
+    gap: 10px;
+}
+
+.timeline li {
+    display: grid;
+    gap: 2px;
+    padding-left: 12px;
+    border-left: 2px solid #d6dfe3;
+    font-size: 13px;
+}
+
+.timeline-when {
+    color: #6b7a83;
+    font-size: 12px;
+}
+
+.drawer-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 20px 16px;
+}
+
+/* Anchored bottom-left: the drawer occupies the right edge and the header
+   actions the top-right, so this corner is the only one a toast never covers. */
+.toast-stack {
+    position: fixed;
+    left: 18px;
+    bottom: 18px;
+    display: grid;
+    gap: 8px;
+    z-index: 60;
+    max-width: min(420px, calc(100vw - 36px));
+}
+
+.toast {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 11px 14px;
+    border-radius: 8px;
+    background: #172026;
+    color: #fff;
+    font-size: 13px;
+    box-shadow: 0 8px 20px rgb(23 32 38 / 18%);
+}
+
+.toast.success {
+    background: #1f6b3a;
+}
+
+.toast.error {
+    background: #b3261e;
+}
+
+.toast-close {
+    border: none;
+    background: transparent;
+    color: inherit;
+    min-height: auto;
+    padding: 0;
+    font-size: 16px;
+    line-height: 1;
+}
+
+code {
+    background: #eef2f3;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+/* The drawer is a header/body/footer column so long content scrolls while the
+   title and action buttons stay pinned. */
+.drawer {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    overflow: hidden;
+}
+
+.drawer-header {
+    padding: 20px 20px 18px;
+}
+
+.drawer-actions {
+    padding: 14px 20px;
+    border-top: 1px solid #e5ecef;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+/* Searchable, API-backed select. The datasets behind these fields are far too
+   large for a plain <select>, so the list is fetched per keystroke. */
+.search-select {
+    position: relative;
+}
+
+.search-select-control {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-select-control input {
+    width: 100%;
+    min-height: 38px;
+    padding: 0 30px 0 10px;
+    border: 1px solid #cdd7dd;
+    border-radius: 6px;
+    background: #fff;
+    color: #172026;
+}
+
+.search-select.is-open .search-select-control input {
+    border-color: #0f766e;
+}
+
+.search-select-clear {
+    position: absolute;
+    right: 6px;
+    border: none;
+    background: transparent;
+    color: #6b7a83;
+    min-height: auto;
+    padding: 0 4px;
+    font-size: 17px;
+    line-height: 1;
+}
+
+.search-select-list {
+    position: absolute;
+    z-index: 30;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    max-height: 260px;
+    overflow-y: auto;
+    margin: 0;
+    padding: 4px;
+    list-style: none;
+    background: #fff;
+    border: 1px solid #d3dee3;
+    border-radius: 8px;
+    box-shadow: 0 10px 26px rgb(15 23 42 / 12%);
+}
+
+.search-select-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+    padding: 7px 9px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.search-select-list li.highlighted {
+    background: #e8f2f1;
+}
+
+.search-select-status {
+    color: #6b7a83;
+    cursor: default;
+}
+
+.search-select-hint {
+    color: #6b7a83;
+    font-size: 12px;
+    white-space: nowrap;
+}
