@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Actions\Inventory;
 
+use App\Contracts\StockLedger;
 use App\Data\Inventory\InventoryAdjustmentData;
 use App\Events\Inventory\InventoryChanged;
 use App\Models\InventoryItem;
 use App\Models\Product;
-use App\Services\InventoryLedger;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -26,7 +26,7 @@ class AdjustInventoryAction
     /**
      * Bind the stock ledger.
      */
-    public function __construct(private readonly InventoryLedger $ledger) {}
+    public function __construct(private readonly StockLedger $ledger) {}
 
     /**
      * Adjust on-hand stock for a product under a row lock.

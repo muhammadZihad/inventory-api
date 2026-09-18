@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Services\SalesMetricsService;
+use App\Contracts\SalesMetrics;
 use Illuminate\Console\Command;
 
 /**
@@ -19,7 +19,7 @@ class RebuildSalesMetrics extends Command
     /**
      * Rebuild every row and report how long it took.
      */
-    public function handle(SalesMetricsService $metrics): int
+    public function handle(SalesMetrics $metrics): int
     {
         $this->info('Rebuilding product sales metrics…');
         $startedAt = microtime(true);

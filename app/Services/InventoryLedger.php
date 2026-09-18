@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Contracts\StockLedger;
 use App\Enums\InventoryMovementType;
 use App\Models\InventoryItem;
 use App\Models\InventoryMovement;
@@ -24,7 +25,7 @@ use Illuminate\Database\QueryException;
  * Callers are responsible for opening the transaction; this class refuses to
  * guess transaction boundaries it cannot see.
  */
-class InventoryLedger
+class InventoryLedger implements StockLedger
 {
     /**
      * Lock the inventory rows for the given products for the rest of the transaction.

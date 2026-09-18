@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Contracts\SalesMetrics;
 use App\Models\Concerns\HasFilters;
 use App\QueryFilters\ProductFilter;
-use App\Services\SalesMetricsService;
 use App\Support\Money;
 use Database\Factories\ProductFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -45,7 +45,7 @@ class Product extends BaseModel
         parent::booted();
 
         static::created(function (self $product): void {
-            app(SalesMetricsService::class)->initialise($product);
+            app(SalesMetrics::class)->initialise($product);
         });
     }
 

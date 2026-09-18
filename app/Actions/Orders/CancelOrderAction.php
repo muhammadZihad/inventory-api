@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Actions\Orders;
 
+use App\Contracts\StockLedger;
 use App\Enums\OrderStatus;
 use App\Events\Orders\OrderCancelled;
 use App\Exceptions\InvalidOrderTransitionException;
 use App\Models\Order;
-use App\Services\InventoryLedger;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -26,7 +26,7 @@ class CancelOrderAction
     /**
      * Bind the stock ledger.
      */
-    public function __construct(private readonly InventoryLedger $ledger) {}
+    public function __construct(private readonly StockLedger $ledger) {}
 
     /**
      * Cancel the order, releasing its reservations exactly once.

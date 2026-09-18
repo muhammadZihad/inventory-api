@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
-use App\Services\OrderReportService;
-use App\Services\SalesMetricsService;
+use App\Contracts\OrderReports;
+use App\Contracts\SalesMetrics;
 use App\Support\CacheNamespace;
 use App\Support\CacheRepository;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -34,7 +34,7 @@ class RefreshOrderReportCache implements ShouldBeUnique, ShouldQueue
     /**
      * Invalidate the stale summary and recompute it for the next reader.
      */
-    public function handle(OrderReportService $reports, CacheRepository $cache, SalesMetricsService $metrics): void
+    public function handle(OrderReports $reports, CacheRepository $cache, SalesMetrics $metrics): void
     {
         $cache->flush(CacheNamespace::Reports);
 

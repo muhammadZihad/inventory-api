@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Reports;
 
+use App\Contracts\OrderReports;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Reports\OrderReportRequest;
-use App\Services\OrderReportService;
 use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 
@@ -46,7 +46,7 @@ class OrderReportController extends Controller
      *   "errors": {"status": ["The selected status is invalid."]}
      * }
      */
-    public function __invoke(OrderReportRequest $request, OrderReportService $reports): JsonResponse
+    public function __invoke(OrderReportRequest $request, OrderReports $reports): JsonResponse
     {
         return ApiResponse::success(
             $reports->summary($request->validated()),

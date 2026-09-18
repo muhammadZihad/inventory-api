@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Contracts\SalesMetrics;
 use App\Models\User;
-use App\Services\SalesMetricsService;
 use App\Support\CacheNamespace;
 use App\Support\CacheRepository;
 use Illuminate\Console\OutputStyle;
@@ -122,7 +122,7 @@ class DatabaseSeeder extends Seeder
         unset($catalog, $balances);
 
         $output?->writeln('<comment>Building product sales metrics…</comment>');
-        app(SalesMetricsService::class)->rebuild();
+        app(SalesMetrics::class)->rebuild();
 
         $this->invalidateCachedReads();
 

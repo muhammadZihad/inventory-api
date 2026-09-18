@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Contracts\OrderReports;
 use App\Enums\OrderStatus;
 use App\Models\Order;
 use App\Support\CacheNamespace;
@@ -19,7 +20,7 @@ use Illuminate\Database\Eloquent\Builder;
  * so the report costs a single index scan regardless of how many counters it
  * exposes.
  */
-class OrderReportService
+class OrderReportService implements OrderReports
 {
     /**
      * Bind the shared cache repository.

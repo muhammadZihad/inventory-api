@@ -4,7 +4,13 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Contracts\OrderReports;
+use App\Contracts\SalesMetrics;
+use App\Contracts\StockLedger;
 use App\Database\Blueprint;
+use App\Services\InventoryLedger;
+use App\Services\OrderReportService;
+use App\Services\SalesMetricsService;
 use App\Support\CacheRepository;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
@@ -30,14 +36,18 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->bind('db.schema', function ($app) {
-            $builder = $app['db']->connection()->getSchemaBuilder();
-            $builder->blueprintResolver(fn ($connection, $table, $callback) => new Blueprint($connection, $table, $callback));
-
-            return $builder;
-        });
+        // Laravel's schema builder resolves Blueprint through the container when
+        // no resolver is set, so binding the implementation is enough to give
+        // every migration ulid(), actionAt() and actionBy(). Rebinding
+        // 'db.schema' instead would pin the builder to the default connection.
+        $this->app->bind(BaseBlueprint::class, Blueprint::class);
 
         $this->app->singleton(CacheRepository::class, fn (): CacheRepository => new CacheRepository(Cache::store()));
+
+        // Consumers type-hint the contract, not the implementation.
+        $this->app->bind(StockLedger::class, InventoryLedger::class);
+        $this->app->bind(SalesMetrics::class, SalesMetricsService::class);
+        $this->app->bind(OrderReports::class, OrderReportService::class);
     }
 
     /**
@@ -49,34 +59,9 @@ class AppServiceProvider extends ServiceProvider
         // N+1 reach production unnoticed.
         Model::preventLazyLoading(! $this->app->isProduction());
 
-        $this->registerSchemaMacros();
         $this->registerRateLimiters();
 
         Schema::defaultMorphKeyType('ulid');
-    }
-
-    /**
-     * Register the shared column macros used across migrations.
-     */
-    private function registerSchemaMacros(): void
-    {
-        BaseBlueprint::macro('actionAt', function (?string $action = null) {
-            if ($action) {
-                return $this->dateTime($action.'_at')->nullable();
-            }
-
-            $this->dateTime('created_at')->nullable();
-            $this->dateTime('updated_at')->nullable();
-        });
-
-        BaseBlueprint::macro('actionBy', function (?string $action = null) {
-            if ($action) {
-                return $this->char($action.'_by', 26)->nullable()->index();
-            }
-
-            $this->char('created_by', 26)->nullable()->index();
-            $this->char('updated_by', 26)->nullable()->index();
-        });
     }
 
     /**

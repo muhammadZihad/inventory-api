@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Actions\Orders;
 
+use App\Contracts\StockLedger;
 use App\Enums\OrderStatus;
 use App\Events\Orders\OrderStatusChanged;
 use App\Exceptions\InvalidOrderTransitionException;
 use App\Models\Order;
-use App\Services\InventoryLedger;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -26,7 +26,7 @@ class UpdateOrderStatusAction
     /**
      * Bind the stock ledger.
      */
-    public function __construct(private readonly InventoryLedger $ledger) {}
+    public function __construct(private readonly StockLedger $ledger) {}
 
     /**
      * Apply a status transition, or reject it as invalid.

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
+use App\Contracts\SalesMetrics;
 use App\Events\Orders\OrderCreated;
-use App\Services\SalesMetricsService;
 
 /**
  * Folds a new order into the materialised product sales totals.
@@ -20,7 +20,7 @@ class UpdateProductSalesMetrics
     /**
      * Bind the metrics service.
      */
-    public function __construct(private readonly SalesMetricsService $metrics) {}
+    public function __construct(private readonly SalesMetrics $metrics) {}
 
     /**
      * Add the order's line items to their products' totals.

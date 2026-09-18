@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Orders;
 
+use App\Contracts\StockLedger;
 use App\Data\Orders\CreateOrderData;
 use App\Data\Orders\OrderItemData;
 use App\Enums\OrderStatus;
@@ -12,7 +13,6 @@ use App\Exceptions\InsufficientStockException;
 use App\Models\InventoryItem;
 use App\Models\Order;
 use App\Models\Product;
-use App\Services\InventoryLedger;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -35,7 +35,7 @@ class CreateOrderAction
     /**
      * Bind the stock ledger.
      */
-    public function __construct(private readonly InventoryLedger $ledger) {}
+    public function __construct(private readonly StockLedger $ledger) {}
 
     /**
      * Reserve stock and persist the order, or fail without side effects.

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Contracts\SalesMetrics;
 use App\Models\Order;
 use App\Models\Product;
 use Illuminate\Support\Facades\DB;
@@ -19,7 +20,7 @@ use Illuminate\Support\Facades\DB;
  * position — so it is recomputed in a background job rather than on the write
  * path. It therefore trails the totals by at most one job cycle.
  */
-class SalesMetricsService
+class SalesMetricsService implements SalesMetrics
 {
     /**
      * Create the zeroed row a new product needs so it still sorts and joins.
